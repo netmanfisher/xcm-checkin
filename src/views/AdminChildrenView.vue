@@ -6,6 +6,7 @@ import { supabase } from '../supabase'
 const router = useRouter()
 
 const children = ref([])
+const currentView = ref('children') // children, wishes, plans, reviews
 const loading = ref(false)
 const showModal = ref(false)
 const editingChild = ref(null)

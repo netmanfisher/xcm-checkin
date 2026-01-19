@@ -112,7 +112,10 @@ async function approveCheckIn(checkIn) {
     await fetchPendingCheckIns()
   } catch (error) {
     console.error('审核失败:', error)
-    alert('审核失败，请重试')
+    console.error('错误详情:', error.message)
+    console.error('错误代码:', error.code)
+    console.error('错误堆栈:', error.stack)
+    alert(`审核失败: ${error.message || '未知错误'}\n请检查浏览器控制台获取详细信息`)
   } finally {
     processing.value = false
   }
@@ -141,8 +144,10 @@ async function rejectCheckIn(checkIn) {
     alert('已拒绝该打卡')
     await fetchPendingCheckIns()
   } catch (error) {
-    console.error('审核失败:', error)
-    alert('审核失败，请重试')
+    console.error('拒绝失败:', error)
+    console.error('错误详情:', error.message)
+    console.error('错误代码:', error.code)
+    alert(`拒绝失败: ${error.message || '未知错误'}\n请检查浏览器控制台获取详细信息`)
   } finally {
     processing.value = false
   }
