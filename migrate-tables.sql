@@ -22,9 +22,9 @@ BEGIN
   END IF;
 END $$;
 
--- 更新现有数据
-UPDATE xcm_study_plans SET weekdays = [1, 2, 3, 4, 5, 6, 7] WHERE weekdays IS NULL;
-UPDATE xcm_wishes SET icon = '🎁' WHERE icon IS NULL;
+-- 更新现有数据（使用 ARRAY[...] 语法）
+UPDATE xcm_study_plans SET weekdays = ARRAY[1, 2, 3, 4, 5, 6, 7] WHERE weekdays IS NULL;
+UPDATE xcm_wishes SET icon = '🎁' WHERE icon IS NULL OR icon = '';
 
 -- 查询确认
 SELECT 'study_plans weekdays' as table_name, column_name, data_type
