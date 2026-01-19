@@ -133,7 +133,7 @@ async function uploadAudio() {
 }
 
 async function submitCheckIn() {
-  // 验证必填项
+  // 验证必填项 - 只有在计划要求时才验证
   if (plan.value.require_photo && !photoFile.value) {
     alert('请上传照片')
     return
@@ -144,12 +144,19 @@ async function submitCheckIn() {
     return
   }
 
+  // 如果既没有照片也没有录音，提示用户
+  if (!photoFile.value && !audioFile.value && !note.value) {
+    if (!confirm('还没有添加照片、录音或备注，确定要提交打卡吗？')) {
+      return
+    }
+  }
+
   try {
     submitting.value = true
 
-    // 上传文件
-    const photoUrl = await uploadPhoto()
-    const audioUrl = await uploadAudio()
+    // 上传文件（如果有）
+    const photoUrl = photoFile.value ? await uploadPhoto() : null
+    const audioUrl = audioFile.value ? await uploadAudio() : null
 
     // 创建打卡记录
     const { error } = await supabase
@@ -205,6 +212,7 @@ function cancel() {
       <div class="form-section">
         <h3>📸 上传照片</h3>
         <p v-if="plan.require_photo" class="required">* 必填</p>
+        <p v-else class="optional">（可选）</p>
         <div class="photo-upload" @click="$refs.photoInput.click()">
           <div v-if="photoPreview" class="photo-preview">
             <img :src="photoPreview" alt="预览">
@@ -227,6 +235,7 @@ function cancel() {
       <div class="form-section">
         <h3>🎤 录音</h3>
         <p v-if="plan.require_audio" class="required">* 必填</p>
+        <p v-else class="optional">（可选）</p>
         <div class="audio-recorder">
           <button
             v-if="!audioRecording && !audioFile"
@@ -378,6 +387,14 @@ function cancel() {
   font-size: 0.9em;
   margin-left: 10px;
 }
+
+.optional {
+  display: inline;
+  color: #999;
+  font-size: 0.85em;
+  margin-left: 10px;
+}
+
 
 .photo-upload {
   border: 2px dashed #DDD;
