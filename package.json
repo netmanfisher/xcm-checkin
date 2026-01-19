@@ -9,8 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "minapp-sdk": "^3.23.6",
-    "vue": "^3.5.24"
+    "pinia": "^2.1.7",
+    "vue": "^3.5.24",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
