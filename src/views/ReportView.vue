@@ -25,7 +25,8 @@ async function fetchMonthData() {
   try {
     const month = selectedMonth.value
     const startDate = `${month}-01`
-    const endDate = new Date(new Date(month.slice(0, 4), parseInt(month.slice(5, 7)) + 1, 0).toISOString().slice(0, 10)
+    const lastDay = new Date(parseInt(month.slice(0, 4)), parseInt(month.slice(5, 7)), 0)
+    const endDate = lastDay.toISOString().slice(0, 10)
 
     // 获取该月的所有打卡记录
     const { data: checkIns } = await supabase
