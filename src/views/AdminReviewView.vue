@@ -18,18 +18,32 @@ onMounted(async () => {
 async function fetchPendingCheckIns() {
   try {
     loading.value = true
-    const { data, error } = await supabase
+
+    // 先获取待审核打卡
+    const { data: checkIns, error } = await supabase
       .from('xcm_check_ins')
-      .select(`
-        *,
-        xcm_children (id, name, avatar_url),
-        xcm_study_plans (id, name, icon, stars_reward)
-      `)
+      .select('*')
       .eq('status', 'pending')
       .order('check_in_time', { ascending: false })
 
     if (error) throw error
-    pendingCheckIns.value = data
+
+    // 获取所有孩子信息
+    const { data: children } = await supabase
+      .from('xcm_children')
+      .select('id, name, avatar_url')
+
+    // 获取所有计划信息
+    const { data: plans } = await supabase
+      .from('xcm_study_plans')
+      .select('id, name, icon, stars_reward')
+
+    // 组合数据
+    pendingCheckIns.value = (checkIns || []).map(checkIn => ({
+      ...checkIn,
+      xcm_children: children?.find(c => c.id === checkIn.child_id) || {},
+      xcm_study_plans: plans?.find(p => p.id === checkIn.plan_id) || {}
+    }))
   } catch (error) {
     console.error('获取待审核打卡失败:', error)
     alert('获取待审核打卡失败')
@@ -47,13 +61,15 @@ async function approveCheckIn(checkIn) {
     processing.value = true
 
     // 更新打卡状态
+    const updateData = {
+      status: 'approved',
+      reviewed_at: new Date().toISOString()
+    }
+
+    // 如果有 reviewer_id 字段才添加
     const { error: updateError } = await supabase
       .from('xcm_check_ins')
-      .update({
-        status: 'approved',
-        reviewed_at: new Date().toISOString(),
-        reviewer_id: authStore.adminUser.id
-      })
+      .update(updateData)
       .eq('id', checkIn.id)
 
     if (updateError) throw updateError
@@ -65,7 +81,7 @@ async function approveCheckIn(checkIn) {
       .eq('id', checkIn.child_id)
       .single()
 
-    const newStars = (child?.stars || 0) + checkIn.xcm_study_plans.stars_reward
+    const newStars = (child?.stars || 0) + (checkIn.xcm_study_plans?.stars_reward || 0)
 
     const { error: childError } = await supabase
       .from('xcm_children')
@@ -109,14 +125,15 @@ async function rejectCheckIn(checkIn) {
   try {
     processing.value = true
 
+    const updateData = {
+      status: 'rejected',
+      rejection_reason: reason || '未通过审核',
+      reviewed_at: new Date().toISOString()
+    }
+
     const { error } = await supabase
       .from('xcm_check_ins')
-      .update({
-        status: 'rejected',
-        rejection_reason: reason || '未通过审核',
-        reviewed_at: new Date().toISOString(),
-        reviewer_id: authStore.adminUser.id
-      })
+      .update(updateData)
       .eq('id', checkIn.id)
 
     if (error) throw error

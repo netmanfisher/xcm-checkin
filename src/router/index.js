@@ -27,6 +27,24 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
+      path: '/admin/children',
+      name: 'admin-children',
+      component: () => import('../views/AdminChildrenView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/plans',
+      name: 'admin-plans',
+      component: () => import('../views/AdminPlansView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/wishes',
+      name: 'admin-wishes',
+      component: () => import('../views/AdminWishesView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/checkin/:planId',
       name: 'checkin',
       component: () => import('../views/CheckInView.vue'),
