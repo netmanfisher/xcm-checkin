@@ -40,13 +40,25 @@ async function fetchChildren() {
 async function fetchWishes() {
   try {
     loading.value = true
-    const { data, error } = await supabase
+
+    // 获取所有愿望
+    const { data: wishesData, error: wishesError } = await supabase
       .from('xcm_wishes')
-      .select('*, xcm_children(name)')
+      .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) throw error
-    wishes.value = data || []
+    if (wishesError) throw wishesError
+
+    // 获取所有孩子
+    const { data: childrenData } = await supabase
+      .from('xcm_children')
+      .select('id, name')
+
+    // 组合数据
+    wishes.value = (wishesData || []).map(wish => ({
+      ...wish,
+      xcm_children: childrenData?.find(c => c.id === wish.child_id) || { name: '' }
+    }))
   } catch (error) {
     console.error('获取愿望列表失败:', error)
     alert('获取愿望列表失败')
@@ -60,6 +72,7 @@ function openAddModal() {
   formData.value = {
     child_id: children.value[0]?.id || '',
     name: '',
+    icon: '🎁',
     description: '',
     stars_cost: 10,
     status: 'available'
@@ -72,6 +85,7 @@ function openEditModal(wish) {
   formData.value = {
     child_id: wish.child_id,
     name: wish.name,
+    icon: wish.icon || '🎁',
     description: wish.description,
     stars_cost: wish.stars_cost,
     status: wish.status
@@ -89,12 +103,19 @@ async function saveWish() {
 
       if (error) throw error
     } else {
+      const insertData = {
+        child_id: formData.value.child_id,
+        name: formData.value.name,
+        icon: formData.value.icon,
+        description: formData.value.description,
+        stars_cost: formData.value.stars_cost,
+        status: formData.value.status,
+        created_at: new Date().toISOString()
+      }
+
       const { error } = await supabase
         .from('xcm_wishes')
-        .insert({
-          ...formData.value,
-          created_at: new Date().toISOString()
-        })
+        .insert(insertData)
 
       if (error) throw error
     }
@@ -103,7 +124,7 @@ async function saveWish() {
     await fetchWishes()
   } catch (error) {
     console.error('保存失败:', error)
-    alert('保存失败，请重试')
+    alert(`保存失败: ${error.message || '未知错误'}`)
   }
 }
 
@@ -141,7 +162,7 @@ function goBack() {
 
     <div v-else class="wishes-list">
       <div v-for="wish in wishes" :key="wish.id" class="wish-card">
-        <div class="wish-icon">🎁</div>
+        <div class="wish-icon">{{ wish.icon || '🎁' }}</div>
         <div class="wish-info">
           <div class="wish-name">{{ wish.name }}</div>
           <div class="wish-details">
@@ -177,6 +198,11 @@ function goBack() {
           <div class="form-group">
             <label>愿望名称</label>
             <input v-model="formData.name" type="text" required />
+          </div>
+
+          <div class="form-group">
+            <label>图标（emoji）</label>
+            <input v-model="formData.icon" type="text" placeholder="🎁" />
           </div>
 
           <div class="form-group">

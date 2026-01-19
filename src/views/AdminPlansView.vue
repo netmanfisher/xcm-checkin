@@ -18,8 +18,19 @@ const formData = ref({
   require_photo: false,
   require_audio: false,
   status: 'active',
-  sort_order: 1
+  sort_order: 1,
+  weekdays: [1, 2, 3, 4, 5, 6, 7] // 默认每天
 })
+
+const weekdays = [
+  { value: 1, label: '周一' },
+  { value: 2, label: '周二' },
+  { value: 3, label: '周三' },
+  { value: 4, label: '周四' },
+  { value: 5, label: '周五' },
+  { value: 6, label: '周六' },
+  { value: 7, label: '周日' }
+]
 
 onMounted(async () => {
   await fetchPlans()
@@ -54,7 +65,8 @@ function openAddModal() {
     require_photo: false,
     require_audio: false,
     status: 'active',
-    sort_order: plans.value.length + 1
+    sort_order: plans.value.length + 1,
+    weekdays: [1, 2, 3, 4, 5, 6, 7]
   }
   showModal.value = true
 }
@@ -70,9 +82,19 @@ function openEditModal(plan) {
     require_photo: plan.require_photo,
     require_audio: plan.require_audio,
     status: plan.status,
-    sort_order: plan.sort_order
+    sort_order: plan.sort_order,
+    weekdays: plan.weekdays || [1, 2, 3, 4, 5, 6, 7]
   }
   showModal.value = true
+}
+
+function toggleWeekday(value) {
+  const index = formData.value.weekdays.indexOf(value)
+  if (index > -1) {
+    formData.value.weekdays.splice(index, 1)
+  } else {
+    formData.value.weekdays.push(value)
+  }
 }
 
 async function savePlan() {
@@ -206,6 +228,22 @@ function goBack() {
               <option value="active">启用</option>
               <option value="inactive">禁用</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label>周期（选择需要打卡的日期）</label>
+            <div class="weekdays-selector">
+              <button
+                v-for="day in weekdays"
+                :key="day.value"
+                type="button"
+                class="weekday-btn"
+                :class="{ active: formData.weekdays.includes(day.value) }"
+                @click="toggleWeekday(day.value)"
+              >
+                {{ day.label }}
+              </button>
+            </div>
           </div>
 
           <div class="form-actions">
@@ -398,6 +436,32 @@ function goBack() {
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
+  border-color: #667eea;
+}
+
+.weekdays-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.weekday-btn {
+  padding: 8px 12px;
+  border: 2px solid #E5E5EA;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.3s;
+}
+
+.weekday-btn:hover {
+  border-color: #667eea;
+}
+
+.weekday-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   border-color: #667eea;
 }
 

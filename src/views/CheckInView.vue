@@ -177,7 +177,7 @@ async function submitCheckIn() {
     router.push('/home')
   } catch (error) {
     console.error('提交打卡失败:', error)
-    alert('提交打卡失败，请重试')
+    alert(`提交打卡失败: ${error.message || '未知错误'}`)
   } finally {
     submitting.value = false
   }
