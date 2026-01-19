@@ -34,8 +34,16 @@ async function fetchChildren() {
       .eq('status', 'active')
       .order('created_at')
 
-    if (error) throw error
-    children.value = data
+    if (error) {
+      console.error('❌ 数据库错误:', error)
+      console.error('错误代码:', error.code)
+      console.error('错误信息:', error.message)
+      console.error('提示: 请确保已在 Supabase 中创建数据库表并插入测试数据')
+      throw error
+    }
+
+    console.log('✅ 成功获取孩子列表:', data)
+    children.value = data || []
   } catch (error) {
     console.error('获取孩子列表失败:', error)
   } finally {
@@ -62,6 +70,15 @@ function goToAdminLogin() {
 
     <div v-if="loading" class="loading">
       <p>加载中...</p>
+    </div>
+
+    <div v-else-if="children.length === 0" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h2>还没有孩子账号</h2>
+      <p>请先在管理后台添加孩子账号</p>
+      <button class="admin-login-btn" @click="goToAdminLogin">
+        前往管理后台
+      </button>
     </div>
 
     <div v-else class="children-grid">
@@ -135,6 +152,31 @@ function goToAdminLogin() {
   color: white;
   margin-top: 50px;
 }
+
+.empty-state {
+  text-align: center;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  margin: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.empty-icon {
+  font-size: 4em;
+  margin-bottom: 20px;
+}
+
+.empty-state h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
 
 .children-grid {
   display: grid;
