@@ -213,9 +213,15 @@ async function savePlan() {
 
       if (error) throw error
     } else {
+      // 如果是"当日当次"任务，设置 first_show_date 为今天
+      const planData = { ...formData.value }
+      if (planData.weekdays.includes(0)) {
+        planData.first_show_date = new Date().toISOString().split('T')[0]
+      }
+
       const { error } = await supabase
         .from('xcm_study_plans')
-        .insert(formData.value)
+        .insert(planData)
 
       if (error) throw error
     }

@@ -64,42 +64,62 @@ async function fetchStudyPlans() {
 
 async function fetchTodayCheckIns() {
   try {
+    if (!authStore.currentChild?.id) {
+      console.warn('未选择孩子，跳过获取今日打卡')
+      todayCheckIns.value = []
+      return
+    }
+
     const today = new Date().toISOString().split('T')[0]
     const { data, error } = await supabase
       .from('xcm_check_ins')
       .select('*')
-      .eq('child_id', authStore.currentChild?.id)
+      .eq('child_id', authStore.currentChild.id)
       .eq('status', 'approved')
       .gte('check_in_time', today)
       .order('check_in_time')
 
     if (error) throw error
-    todayCheckIns.value = data
+    todayCheckIns.value = data || []
   } catch (error) {
     console.error('获取今日打卡失败:', error)
+    todayCheckIns.value = []
   }
 }
 
 async function fetchPendingCheckIns() {
   try {
+    if (!authStore.currentChild?.id) {
+      console.warn('未选择孩子，跳过获取待审核打卡')
+      pendingCheckIns.value = []
+      return
+    }
+
     const today = new Date().toISOString().split('T')[0]
     const { data, error } = await supabase
       .from('xcm_check_ins')
       .select('*')
-      .eq('child_id', authStore.currentChild?.id)
+      .eq('child_id', authStore.currentChild.id)
       .eq('status', 'pending')
       .gte('check_in_time', today)
       .order('check_in_time')
 
     if (error) throw error
-    pendingCheckIns.value = data
+    pendingCheckIns.value = data || []
   } catch (error) {
     console.error('获取待审核打卡失败:', error)
+    pendingCheckIns.value = []
   }
 }
 
 async function fetchWeekData() {
   try {
+    if (!authStore.currentChild?.id) {
+      console.warn('未选择孩子，跳过获取本周数据')
+      weekData.value = []
+      return
+    }
+
     const weekStart = weekDates.value[0].dateStr
     const weekEnd = weekDates.value[6].dateStr + 'T23:59:59'
 
@@ -107,7 +127,7 @@ async function fetchWeekData() {
     const { data, error } = await supabase
       .from('xcm_check_ins')
       .select('check_in_time, plan_id')
-      .eq('child_id', authStore.currentChild?.id)
+      .eq('child_id', authStore.currentChild.id)
       .eq('status', 'approved')
       .gte('check_in_time', weekStart)
       .lte('check_in_time', weekEnd)
@@ -116,7 +136,7 @@ async function fetchWeekData() {
 
     // 按日期统计
     const weekStats = weekDates.value.map(day => {
-      const dayCheckIns = data.filter(item => {
+      const dayCheckIns = (data || []).filter(item => {
         const itemDate = new Date(item.check_in_time).toISOString().split('T')[0]
         return itemDate === day.dateStr
       })
@@ -133,6 +153,7 @@ async function fetchWeekData() {
     weekData.value = weekStats
   } catch (error) {
     console.error('获取本周数据失败:', error)
+    weekData.value = []
   }
 }
 
@@ -173,23 +194,26 @@ const groupedPlans = computed(() => {
     // 检查是否应该在今日显示
     const planWeekdays = plan.weekdays || [1, 2, 3, 4, 5, 6, 7]
 
-    // 如果包含0（当日当次），则只检查今天是否已打卡
-    if (planWeekdays.includes(0)) {
-      const hasCompletedToday = todayCheckIns.value.some(checkin => checkin.plan_id === plan.id)
-      const hasPendingToday = pendingCheckIns.value.some(checkin => checkin.plan_id === plan.id)
+    let shouldShow = false
+    const today = new Date().toISOString().split('T')[0]
 
-      // 如果今天已打卡或待审核，则不再显示这个任务
-      if (hasCompletedToday || hasPendingToday) {
-        return // 不添加到显示列表
-      }
-      // 否则显示（第一次打卡）
+    // 如果包含0（当日当次）
+    if (planWeekdays.includes(0)) {
+      // "当日当次"任务：只在 first_show_date 当天显示
+      // 如果没有 first_show_date 字段，使用 created_at
+      const firstShowDate = plan.first_show_date || (plan.created_at ? plan.created_at.split('T')[0] : today)
+      shouldShow = firstShowDate === today
     } else {
-      // 正常的周期检查，检查今天是否在计划中
-      if (!planWeekdays.includes(currentWeekday.value)) {
-        return // 今天不是这个计划的打卡日
-      }
+      // 正常的周期检查：检查今天是否在计划中
+      shouldShow = planWeekdays.includes(currentWeekday.value)
     }
 
+    // 如果不应该显示，跳过
+    if (!shouldShow) {
+      return
+    }
+
+    // 将任务添加到对应的时间段分组
     const period = plan.time_period || 'any'
     if (groups[period]) {
       groups[period].plans.push(plan)
