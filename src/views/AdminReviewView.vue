@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import AdminLayout from '../components/AdminLayout.vue'
 import { supabase } from '../supabase'
 import { useAuthStore } from '../stores/auth'
 
@@ -224,9 +225,8 @@ function playAudio(audioUrl) {
 </script>
 
 <template>
-  <div class="review-container">
+  <AdminLayout>
     <div class="header">
-      <button class="back-btn" @click="router.push('/admin')">← 返回</button>
       <h2>📋 待审核打卡</h2>
     </div>
 
@@ -291,44 +291,19 @@ function playAudio(audioUrl) {
         </div>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <style scoped>
-.review-container {
-  min-height: 100vh;
-  background: #F5F5F5;
-  padding: 20px;
-  padding-bottom: 100px;
-}
-
 .header {
   background: white;
   border-radius: 20px;
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 1.2em;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 10px;
-  transition: background 0.3s;
-}
-
-.back-btn:hover {
-  background: #F5F5F5;
 }
 
 .header h2 {
-  flex: 1;
   font-size: 1.5em;
   color: #333;
 }

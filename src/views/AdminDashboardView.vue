@@ -1,11 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
-import { useAuthStore } from '../stores/auth'
-
-const router = useRouter()
-const authStore = useAuthStore()
+import AdminSidebar from '../components/AdminSidebar.vue'
 
 const stats = ref({
   childrenCount: 0,
@@ -58,53 +54,11 @@ async function fetchRecentActivities() {
     { time: '刚刚', activity: '系统初始化完成' }
   ]
 }
-
-function manageChildren() {
-  router.push('/admin/children')
-}
-
-function managePlans() {
-  router.push('/admin/plans')
-}
-
-function manageReviews() {
-  router.push('/admin/reviews')
-}
-
-function manageWishes() {
-  router.push('/admin/wishes')
-}
-
-function logout() {
-  authStore.logout()
-  router.push('/')
-}
 </script>
 
 <template>
   <div class="admin-dashboard">
-    <div class="sidebar">
-      <div class="logo">
-        <h2>🔧 管理后台</h2>
-      </div>
-      <nav class="nav-menu">
-        <button @click="manageChildren">
-          👦👧 孩子管理
-        </button>
-        <button @click="managePlans">
-          📝 计划管理
-        </button>
-        <button @click="manageReviews">
-          📋 打卡审核 ({{ stats.pendingReviews }})
-        </button>
-        <button @click="manageWishes">
-          🎁 愿望管理
-        </button>
-        <button class="logout-btn" @click="logout">
-          🚪 退出登录
-        </button>
-      </nav>
-    </div>
+    <AdminSidebar />
 
     <div class="main-content">
       <h1>数据概览</h1>
@@ -130,9 +84,9 @@ function logout() {
       <section class="quick-actions">
         <h2>快捷操作</h2>
         <div class="action-buttons">
-          <button @click="managePlans">📝 添加计划</button>
-          <button @click="manageWishes">🎁 添加愿望</button>
-          <button @click="manageChildren">👧 添加孩子</button>
+          <router-link to="/admin/plans">📝 添加计划</router-link>
+          <router-link to="/admin/wishes">🎁 添加愿望</router-link>
+          <router-link to="/admin/children">👧 添加孩子</router-link>
         </div>
       </section>
 
@@ -159,49 +113,12 @@ function logout() {
   min-height: 100vh;
 }
 
-.sidebar {
-  width: 250px;
-  background: #2C3E50;
-  padding: 20px;
-  color: white;
-}
-
-.logo h2 {
-  font-size: 1.5em;
-  margin-bottom: 30px;
-}
-
-.nav-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.nav-menu button {
-  background: none;
-  border: none;
-  color: white;
-  padding: 12px 15px;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s;
-  font-size: 0.95em;
-}
-
-.nav-menu button:hover {
-  background: #34495E;
-}
-
-.logout-btn {
-  margin-top: auto;
-  background: #E74C3C !important;
-}
-
 .main-content {
   flex: 1;
+  margin-left: 250px;
   padding: 30px;
   background: #ECF0F1;
+  min-height: 100vh;
 }
 
 .main-content h1 {
@@ -262,7 +179,7 @@ function logout() {
   flex-wrap: wrap;
 }
 
-.action-buttons button {
+.action-buttons a {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -271,9 +188,11 @@ function logout() {
   cursor: pointer;
   font-size: 0.9em;
   transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
 }
 
-.action-buttons button:hover {
+.action-buttons a:hover {
   background: #5568d3;
 }
 

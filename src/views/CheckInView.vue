@@ -207,10 +207,9 @@ function cancel() {
         </div>
       </div>
 
-      <div class="form-section">
+      <div v-if="plan.require_photo" class="form-section">
         <h3>📸 上传照片</h3>
-        <p v-if="plan.require_photo" class="required">* 必填</p>
-        <p v-else class="optional">（可选）</p>
+        <p class="required">* 必填</p>
         <div class="photo-upload" @click="$refs.photoInput.click()">
           <div v-if="photoPreview" class="photo-preview">
             <img :src="photoPreview" alt="预览">
@@ -230,10 +229,9 @@ function cancel() {
         >
       </div>
 
-      <div class="form-section">
+      <div v-if="plan.require_audio" class="form-section">
         <h3>🎤 录音</h3>
-        <p v-if="plan.require_audio" class="required">* 必填</p>
-        <p v-else class="optional">（可选）</p>
+        <p class="required">* 必填</p>
         <div class="audio-recorder">
           <button
             v-if="!audioRecording && !audioFile"

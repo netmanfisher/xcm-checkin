@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import AdminLayout from '../components/AdminLayout.vue'
 import { supabase } from '../supabase'
 
 const router = useRouter()
@@ -213,15 +214,11 @@ async function deleteWish(id) {
   }
 }
 
-function goBack() {
-  router.push('/admin')
-}
 </script>
 
 <template>
-  <div class="admin-wishes">
+  <AdminLayout>
     <div class="header">
-      <button class="back-btn" @click="goBack">← 返回</button>
       <h2>🎁 愿望管理</h2>
       <button class="add-btn" @click="openAddModal">+ 添加愿望</button>
     </div>
@@ -310,16 +307,10 @@ function goBack() {
         </form>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <style scoped>
-.admin-wishes {
-  min-height: 100vh;
-  background: #F5F5F5;
-  padding: 20px;
-}
-
 .header {
   background: white;
   border-radius: 20px;
@@ -329,14 +320,6 @@ function goBack() {
   align-items: center;
   gap: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 1.2em;
-  cursor: pointer;
-  padding: 5px 10px;
 }
 
 .header h2 {
