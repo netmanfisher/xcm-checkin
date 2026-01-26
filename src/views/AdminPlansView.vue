@@ -19,10 +19,12 @@ const formData = ref({
   require_audio: false,
   status: 'active',
   sort_order: 1,
-  weekdays: [1, 2, 3, 4, 5, 6, 7] // 默认每天
+  weekdays: [1, 2, 3, 4, 5, 6, 7], // 默认每天
+  time_period: 'any' // 默认任意时间
 })
 
 const weekdays = [
+  { value: 0, label: '🎯 当日当次' },
   { value: 1, label: '周一' },
   { value: 2, label: '周二' },
   { value: 3, label: '周三' },
@@ -30,6 +32,88 @@ const weekdays = [
   { value: 5, label: '周五' },
   { value: 6, label: '周六' },
   { value: 7, label: '周日' }
+]
+
+const timePeriods = [
+  { value: 'morning', label: '🌅 上午' },
+  { value: 'afternoon', label: '☀️ 下午' },
+  { value: 'evening', label: '🌙 晚上' },
+  { value: 'any', label: '📋 全天' }
+]
+
+// 常用任务图标
+const taskIcons = [
+  // 学习类
+  { emoji: '📚', label: '家庭作业' },
+  { emoji: '📝', label: '作业本' },
+  { emoji: '✏️', label: '铅笔' },
+  { emoji: '🖊️', label: '笔记本' },
+  { emoji: '📐', label: '数学' },
+  { emoji: '🔢', label: '计算' },
+  { emoji: '➗', label: '乘法' },
+  { emoji: '➕', label: '加法' },
+  { emoji: '📖', label: '阅读' },
+  { emoji: '📕', label: '书本' },
+  { emoji: '📰', label: '报纸' },
+  { emoji: '🔤', label: '字典' },
+  { emoji: '💡', label: '思考' },
+
+  // 艺术类
+  { emoji: '🎹', label: '钢琴' },
+  { emoji: '🎸', label: '吉他' },
+  { emoji: '🎻', label: '小提琴' },
+  { emoji: '🎺', label: '小号' },
+  { emoji: '🎼', label: '音乐' },
+  { emoji: '🎤', label: '唱歌' },
+  { emoji: '🎧', label: '耳机' },
+  { emoji: '🎨', label: '绘画' },
+  { emoji: '🖌️', label: '蜡笔' },
+  { emoji: '✏️', label: '画笔' },
+  { emoji: '🖍️', label: '彩笔' },
+  { emoji: '🎭', label: '表演' },
+  { emoji: '🎪', label: '马戏' },
+  { emoji: '🎢', label: '游乐园' },
+
+  // 运动类
+  { emoji: '⚽', label: '足球' },
+  { emoji: '🏀', label: '篮球' },
+  { emoji: '🏈', label: '棒球' },
+  { emoji: '🎾', label: '网球' },
+  { emoji: '🏓', label: '乒乓球' },
+  { emoji: '🏸', label: '台球' },
+  { emoji: '🏊', label: '游泳' },
+  { emoji: '🚴', label: '骑车' },
+  { emoji: '🏃', label: '跑步' },
+  { emoji: '🤸', label: '体操' },
+  { emoji: '🧘', label: '瑜伽' },
+  { emoji: '🏄', label: '滑雪' },
+  { emoji: '⛷', label: '滑板' },
+
+  // 语言类
+  { emoji: '🗣️', label: '英语' },
+  { emoji: '🇬🇧', label: '英式' },
+  { emoji: '🇺🇸', label: '美式' },
+  { emoji: '🇨🇳', label: '中文' },
+  { emoji: '📖', label: '朗读' },
+  { emoji: '🗣️', label: '演讲' },
+
+  // 其他
+  { emoji: '🧩', label: '拼图' },
+  { emoji: '🧮', label: '算盘' },
+  { emoji: '🎲', label: '积木' },
+  { emoji: '♟', label: '棋类' },
+  { emoji: '🎯', label: '射箭' },
+  { emoji: '💻', label: '电脑' },
+  { emoji: '📱', label: '手机' },
+  { emoji: '📺', label: '电视' },
+  { emoji: '🎬', label: '电影' },
+  { emoji: '🎞', label: '视频' },
+  { emoji: '🎵', label: '音乐' },
+  { emoji: '🎶', label: '艺术' },
+  { emoji: '🧒', label: '照顾' },
+  { emoji: '🧹', label: '家务' },
+  { emoji: '🍳', label: '烹饪' },
+  { emoji: '🥗', label: '饮食' }
 ]
 
 onMounted(async () => {
@@ -66,7 +150,8 @@ function openAddModal() {
     require_audio: false,
     status: 'active',
     sort_order: plans.value.length + 1,
-    weekdays: [1, 2, 3, 4, 5, 6, 7]
+    weekdays: [1, 2, 3, 4, 5, 6, 7],
+    time_period: 'any'
   }
   showModal.value = true
 }
@@ -83,17 +168,38 @@ function openEditModal(plan) {
     require_audio: plan.require_audio,
     status: plan.status,
     sort_order: plan.sort_order,
-    weekdays: plan.weekdays || [1, 2, 3, 4, 5, 6, 7]
+    weekdays: plan.weekdays || [1, 2, 3, 4, 5, 6, 7],
+    time_period: plan.time_period || 'any'
   }
   showModal.value = true
 }
 
 function toggleWeekday(value) {
   const index = formData.value.weekdays.indexOf(value)
-  if (index > -1) {
-    formData.value.weekdays.splice(index, 1)
+
+  // 特殊处理：如果选择"当日当次"(0)，清除其他所有选项
+  if (value === 0) {
+    if (index > -1) {
+      // 取消选择"当日当次"
+      formData.value.weekdays.splice(index, 1)
+    } else {
+      // 选择"当日当次"，清除其他所有选项
+      formData.value.weekdays = [0]
+    }
   } else {
-    formData.value.weekdays.push(value)
+    // 选择普通星期几，清除"当日当次"选项
+    const zeroIndex = formData.value.weekdays.indexOf(0)
+    if (zeroIndex > -1) {
+      formData.value.weekdays.splice(zeroIndex, 1)
+    }
+
+    // 正常的切换逻辑
+    const index = formData.value.weekdays.indexOf(value)
+    if (index > -1) {
+      formData.value.weekdays.splice(index, 1)
+    } else {
+      formData.value.weekdays.push(value)
+    }
   }
 }
 
@@ -118,13 +224,13 @@ async function savePlan() {
     await fetchPlans()
   } catch (error) {
     console.error('保存失败:', error)
-    alert('保存失败，请重试')
+    console.error('错误详情:', error.message)
+    console.error('错误代码:', error.code)
+    alert(`保存失败: ${error.message || '未知错误'}\n请检查浏览器控制台获取详细信息`)
   }
 }
 
 async function deletePlan(id) {
-  if (!confirm('确定要删除这个学习计划吗？')) return
-
   try {
     const { error } = await supabase
       .from('xcm_study_plans')
@@ -141,6 +247,27 @@ async function deletePlan(id) {
 
 function goBack() {
   router.push('/admin')
+}
+
+function getTimePeriodLabel(period) {
+  const labels = {
+    morning: '🌅 上午',
+    afternoon: '☀️ 下午',
+    evening: '🌙 晚上',
+    any: '📋 全天'
+  }
+  return labels[period] || '📋 全天'
+}
+
+function getWeekdaysLabel(weekdayArray) {
+  if (!weekdayArray || weekdayArray.length === 7) return '每天'
+
+  const labels = {
+    1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '日'
+  }
+
+  const sortedDays = weekdayArray.sort((a, b) => a - b)
+  return sortedDays.map(day => labels[day]).join('、')
 }
 </script>
 
@@ -160,12 +287,21 @@ function goBack() {
         <div class="plan-info">
           <div class="plan-name">{{ plan.name }}</div>
           <div class="plan-details">
-            <span>⏱️ {{ plan.duration_minutes }}分钟</span>
-            <span>⭐ {{ plan.stars_reward }}</span>
-            <span v-if="plan.require_photo">📸 必填</span>
-            <span v-if="plan.require_audio">🎤 必填</span>
+            <span class="detail-tag">
+              {{ getTimePeriodLabel(plan.time_period) }}
+            </span>
+            <span class="detail-tag">⏱️ {{ plan.duration_minutes }}分钟</span>
+            <span class="detail-tag">⭐ {{ plan.stars_reward }}</span>
+            <span v-if="plan.require_photo" class="detail-tag">📸</span>
+            <span v-if="plan.require_audio" class="detail-tag">🎤</span>
+            <span v-if="plan.status === 'inactive'" class="detail-tag inactive">已禁用</span>
+          </div>
+          <div class="weekdays-info" v-if="plan.weekdays && plan.weekdays.length < 7">
+            <span class="weekdays-label">周期：</span>
+            <span class="weekdays-list">{{ getWeekdaysLabel(plan.weekdays) }}</span>
           </div>
         </div>
+
         <div class="plan-actions">
           <button class="edit-btn" @click="openEditModal(plan)">编辑</button>
           <button class="delete-btn" @click="deletePlan(plan.id)">删除</button>
@@ -184,8 +320,19 @@ function goBack() {
           </div>
 
           <div class="form-group">
-            <label>图标（emoji）</label>
-            <input v-model="formData.icon" type="text" />
+            <label>选择图标</label>
+            <div class="icon-selector">
+              <div
+                v-for="icon in taskIcons"
+                :key="icon.emoji"
+                class="icon-option"
+                :class="{ selected: formData.icon === icon.emoji }"
+                @click="formData.icon = icon.emoji"
+                :title="icon.label"
+              >
+                {{ icon.emoji }}
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -206,6 +353,15 @@ function goBack() {
           <div class="form-group">
             <label>排序</label>
             <input v-model="formData.sort_order" type="number" min="1" required />
+          </div>
+
+          <div class="form-group">
+            <label>时间段</label>
+            <select v-model="formData.time_period">
+              <option v-for="period in timePeriods" :key="period.value" :value="period.value">
+                {{ period.label }}
+              </option>
+            </select>
           </div>
 
           <div class="form-group checkbox">
@@ -238,12 +394,16 @@ function goBack() {
                 :key="day.value"
                 type="button"
                 class="weekday-btn"
-                :class="{ active: formData.weekdays.includes(day.value) }"
+                :class="{ active: formData.weekdays.includes(day.value), 'special-day': day.value === 0 }"
                 @click="toggleWeekday(day.value)"
               >
                 {{ day.label }}
               </button>
             </div>
+            <p class="weekday-hint">
+              <span v-if="formData.weekdays.includes(0)">⚠️ "当日当次"表示该任务今天只能打卡一次，完成后即不再显示</span>
+              <span v-else>💡 选择任务在每周几打卡</span>
+            </p>
           </div>
 
           <div class="form-actions">
@@ -316,35 +476,66 @@ function goBack() {
   padding: 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .plan-icon {
-  font-size: 2.5em;
+  font-size: 2em;
+  flex-shrink: 0;
 }
 
 .plan-info {
   flex: 1;
+  min-width: 0;
 }
 
 .plan-name {
-  font-size: 1.2em;
+  font-size: 1.1em;
   font-weight: 600;
   color: #333;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .plan-details {
   display: flex;
-  gap: 15px;
-  font-size: 0.9em;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.85em;
+  margin-bottom: 5px;
+}
+
+.detail-tag {
+  background: #F0F0F0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.detail-tag.inactive {
+  background: #FFF1F0;
+  color: #FF4D4F;
+}
+
+.weekdays-info {
+  font-size: 0.85em;
+  color: #999;
+  margin-top: 5px;
+}
+
+.weekdays-label {
+  font-weight: 500;
+}
+
+.weekdays-list {
   color: #666;
 }
 
 .plan-actions {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .edit-btn, .delete-btn {
@@ -439,6 +630,40 @@ function goBack() {
   border-color: #667eea;
 }
 
+.icon-selector {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #F5F5F5;
+  border-radius: 8px;
+  border: 2px solid #E5E5EA;
+}
+
+.icon-option {
+  font-size: 2em;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: white;
+  border: 2px solid transparent;
+}
+
+.icon-option:hover {
+  background: #E6F7FF;
+  transform: scale(1.1);
+}
+
+.icon-option.selected {
+  background: #E6F7FF;
+  border-color: #1890FF;
+  transform: scale(1.15);
+}
+
 .weekdays-selector {
   display: flex;
   gap: 8px;
@@ -463,6 +688,22 @@ function goBack() {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-color: #667eea;
+}
+
+.weekday-btn.special-day {
+  font-weight: 600;
+  color: #FF6B6B;
+}
+
+.weekday-btn.special-day.active {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border-color: #FF6B6B;
+}
+
+.weekday-hint {
+  margin-top: 8px;
+  font-size: 0.8em;
+  color: #999;
 }
 
 .form-actions {

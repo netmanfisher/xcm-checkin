@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
 import { useAuthStore } from '../stores/auth'
+import BottomNav from '../components/BottomNav.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -103,24 +104,7 @@ function goBack() {
       </div>
     </section>
 
-    <nav class="bottom-nav">
-      <button @click="router.push('/home')">
-        <span class="icon">🏠</span>
-        <span>首页</span>
-      </button>
-      <button @click="router.push('/honors')">
-        <span class="icon">🏆</span>
-        <span>荣誉</span>
-      </button>
-      <button @click="router.push('/wishes')">
-        <span class="icon">🎁</span>
-        <span>愿望</span>
-      </button>
-      <button @click="router.push('/report')">
-        <span class="icon">📈</span>
-        <span>报告</span>
-      </button>
-    </nav>
+    <BottomNav />
   </div>
 </template>
 
@@ -263,40 +247,5 @@ function goBack() {
   text-align: center;
   padding: 40px;
   color: #999;
-}
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px;
-  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.bottom-nav button {
-  background: none;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  color: #666;
-  cursor: pointer;
-  font-size: 0.8em;
-  padding: 5px 10px;
-  border-radius: 10px;
-  transition: all 0.3s;
-}
-
-.bottom-nav button:hover {
-  background: #F5F5F5;
-}
-
-.bottom-nav button .icon {
-  font-size: 1.5em;
 }
 </style>

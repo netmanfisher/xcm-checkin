@@ -92,8 +92,6 @@ async function saveChild() {
 }
 
 async function deleteChild(id) {
-  if (!confirm('确定要删除这个孩子账号吗？')) return
-
   try {
     const { error } = await supabase
       .from('xcm_children')

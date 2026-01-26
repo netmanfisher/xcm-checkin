@@ -53,10 +53,6 @@ async function fetchPendingCheckIns() {
 }
 
 async function approveCheckIn(checkIn) {
-  if (!confirm(`确认通过 ${checkIn.xcm_children.name} 的「${checkIn.xcm_study_plans.name}」打卡？`)) {
-    return
-  }
-
   try {
     processing.value = true
 

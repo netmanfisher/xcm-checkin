@@ -146,9 +146,7 @@ async function submitCheckIn() {
 
   // 如果既没有照片也没有录音，提示用户
   if (!photoFile.value && !audioFile.value && !note.value) {
-    if (!confirm('还没有添加照片、录音或备注，确定要提交打卡吗？')) {
-      return
-    }
+    // Continue without confirmation
   }
 
   try {

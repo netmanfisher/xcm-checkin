@@ -13,10 +13,80 @@ const editingWish = ref(null)
 const formData = ref({
   child_id: '',
   name: '',
+  icon: '🎁',
   description: '',
   stars_cost: 10,
   status: 'available'
 })
+
+// 可选的图标列表
+const iconOptions = [
+  // 礼物类
+  { emoji: '🎁', label: '礼物' },
+  { emoji: '🎀', label: '蝴蝶结' },
+  { emoji: '🎉', label: '庆祝' },
+  { emoji: '🎊', label: '彩球' },
+  { emoji: '🏆', label: '奖杯' },
+  { emoji: '👑', label: '皇冠' },
+  { emoji: '💎', label: '宝石' },
+  { emoji: '🌟', label: '星星' },
+
+  // 食物类
+  { emoji: '🍲', label: '火锅' },
+  { emoji: '🍜', label: '面条' },
+  { emoji: '🍕', label: '披萨' },
+  { emoji: '🍔', label: '汉堡' },
+  { emoji: '🍟', label: '薯条' },
+  { emoji: '🍦', label: '冰淇淋' },
+  { emoji: '🧁', label: '纸杯蛋糕' },
+  { emoji: '🍩', label: '甜甜圈' },
+  { emoji: '🍪', label: '饼干' },
+  { emoji: '🎂', label: '蛋糕' },
+  { emoji: '🥤', label: '饮料' },
+  { emoji: '🧃', label: '果汁' },
+
+  // 图书文具类
+  { emoji: '📚', label: '书籍' },
+  { emoji: '📖', label: '书本' },
+  { emoji: '📓', label: '笔记本' },
+  { emoji: '✏️', label: '铅笔' },
+  { emoji: '🎨', label: '画笔' },
+  { emoji: '🖍️', label: '蜡笔' },
+  { emoji: '📐', label: '尺子' },
+  { emoji: '🔬', label: '显微镜' },
+  { emoji: '🔭', label: '望远镜' },
+
+  // 玩具类
+  { emoji: '🧸', label: '泰迪熊' },
+  { emoji: '🎮', label: '游戏机' },
+  { emoji: '🚗', label: '汽车' },
+  { emoji: '✈️', label: '飞机' },
+  { emoji: '🚂', label: '火车' },
+  { emoji: '🎸', label: '吉他' },
+  { emoji: '🎹', label: '钢琴' },
+  { emoji: '🥁', label: '鼓' },
+  { emoji: '⚽', label: '足球' },
+  { emoji: '🏀', label: '篮球' },
+  { emoji: '🎾', label: '网球' },
+  { emoji: '🎱', label: '台球' },
+
+  // 电子产品
+  { emoji: '📱', label: '手机' },
+  { emoji: '💻', label: '电脑' },
+  { emoji: '📷', label: '相机' },
+  { emoji: '🎧', label: '耳机' },
+  { emoji: '⌚', label: '手表' },
+
+  // 其他
+  { emoji: '👗', label: '连衣裙' },
+  { emoji: '👟', label: '鞋子' },
+  { emoji: '🎒', label: '书包' },
+  { emoji: '💰', label: '钱' },
+  { emoji: '🎫', label: '票' },
+  { emoji: '🎪', label: '马戏团' },
+  { emoji: '🏖️', label: '海滩' },
+  { emoji: '🎢', label: '游乐园' }
+]
 
 onMounted(async () => {
   await fetchChildren()
@@ -129,8 +199,6 @@ async function saveWish() {
 }
 
 async function deleteWish(id) {
-  if (!confirm('确定要删除这个愿望吗？')) return
-
   try {
     const { error } = await supabase
       .from('xcm_wishes')
@@ -201,8 +269,19 @@ function goBack() {
           </div>
 
           <div class="form-group">
-            <label>图标（emoji）</label>
-            <input v-model="formData.icon" type="text" placeholder="🎁" />
+            <label>选择图标</label>
+            <div class="icon-selector">
+              <div
+                v-for="icon in iconOptions"
+                :key="icon.emoji"
+                class="icon-option"
+                :class="{ selected: formData.icon === icon.emoji }"
+                @click="formData.icon = icon.emoji"
+                :title="icon.label"
+              >
+                {{ icon.emoji }}
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -415,6 +494,40 @@ function goBack() {
 .form-group select:focus {
   outline: none;
   border-color: #667eea;
+}
+
+.icon-selector {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #F5F5F5;
+  border-radius: 8px;
+  border: 2px solid #E5E5EA;
+}
+
+.icon-option {
+  font-size: 2em;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: white;
+  border: 2px solid transparent;
+}
+
+.icon-option:hover {
+  background: #E6F7FF;
+  transform: scale(1.1);
+}
+
+.icon-option.selected {
+  background: #E6F7FF;
+  border-color: #1890FF;
+  transform: scale(1.15);
 }
 
 .form-actions {
